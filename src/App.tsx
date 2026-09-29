@@ -6,8 +6,6 @@ import SystemSpecsForm from './components/SystemSpecsForm';
 import FinancialInputs from './components/FinancialInputs';
 import KPISummary from './components/KPISummary';
 import CashFlowChart from './components/CashFlowChart';
-import { Alert, AlertDescription, AlertTitle } from './components/ui/alert';
-import { AlertTriangle } from 'lucide-react';
 import { formatCompactIDR } from './utils/formatters';
 
 // --- 1. Hardcoded Engine Constants ---
@@ -141,93 +139,70 @@ export default function App() {
   }, [projectionData]);
 
   return (
-    <div className="min-h-screen bg-slate-100 p-2 md:p-6 lg:p-8 flex justify-center font-sans text-slate-800 print:bg-white print:p-0">
-      <div className="w-full max-w-[1500px] bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-slate-200">
-        <div ref={componentRef} className="flex flex-col xl:flex-row min-h-[900px] print:flex-col print:p-8">
+    <div className="min-h-screen bg-white flex justify-center items-center font-sans text-slate-800">
+      <div className="w-full max-w-[1500px] my-auto">
+        <div ref={componentRef} className="flex flex-col print:flex-col print:p-8">
           
-          {/* LEFT COLUMN (Wide) */}
-          <div className="w-full xl:w-[72%] p-6 lg:p-10 flex flex-col border-r border-slate-100 gap-6">
-            
-            {/* Top Header - mimicking the top nav */}
-            <div className="flex justify-between items-center mb-2">
-              <Header handlePrint={handlePrint} />
-            </div>
-
-            {/* Main Chart Area */}
-            <div className="bg-slate-50 border border-slate-100 rounded-3xl p-6 flex-1 flex flex-col shadow-sm min-h-[500px]">
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <p className="text-slate-500 font-medium">Net Present Value</p>
-                  <h2 className={`text-4xl lg:text-5xl font-bold tracking-tighter mt-1 ${npv >= 0 ? 'text-[#1B4D3E]' : 'text-[#a04540]'}`}>
-                     {formatCompactIDR(npv)}
-                  </h2>
-                </div>
-                <div className="flex gap-2">
-                   <div className="px-4 py-2 text-sm font-medium rounded-full bg-slate-200 text-slate-700">20y</div>
-                </div>
+          <div className="flex flex-col xl:flex-row flex-1">
+            {/* LEFT COLUMN (Wide) */}
+            <div className="w-full xl:w-[72%] p-6 lg:p-10 flex flex-col gap-6">
+              
+              {/* Top Header */}
+              <div className="flex justify-between items-center mb-2">
+                <Header handlePrint={handlePrint} npv={npv} />
               </div>
-              <div className="flex-1 -mx-2">
-                <CashFlowChart projectionData={projectionData} />
-              </div>
-            </div>
 
-            {/* Bottom Area: Inputs (Mimics the 4 bottom cards in Picture 1) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SystemSpecsForm 
-                plnPowerVA={plnPowerVA} setPlnPowerVA={setPlnPowerVA}
-                capacityKWp={capacityKWp} setCapacityKWp={setCapacityKWp}
-                maxCapacity={maxCapacity}
-                selfConsumptionRatio={selfConsumptionRatio} setSelfConsumptionRatio={setSelfConsumptionRatio}
-              />
-              <FinancialInputs 
-                plnTariff={plnTariff} setPlnTariff={setPlnTariff}
-                tariffInflation={tariffInflation} setTariffInflation={setTariffInflation}
-                capexPerKWp={capexPerKWp} setCapexPerKWp={setCapexPerKWp}
-              />
-            </div>
-
-          </div>
-
-          {/* RIGHT COLUMN (Narrow Sidebar) */}
-          <div className="w-full xl:w-[28%] bg-slate-50 p-6 lg:p-10 flex flex-col gap-8">
-            
-            {/* Risk Score */}
-            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
-              <h3 className="text-xl font-bold text-slate-900 leading-tight mb-4">Financial<br/>Risk Score</h3>
-              {npv < 0 ? (
-                <Alert variant="default" className="bg-[#fffbeb] border-[#fde68a] text-[#92400e] px-4 py-4 rounded-2xl">
-                  <AlertTriangle className="size-5 stroke-[#92400e] mr-2" />
-                  <AlertTitle className="text-[#92400e] font-bold text-sm mb-1">High Risk</AlertTitle>
-                  <AlertDescription className="text-xs">
-                    The Net Present Value is negative. Projected cash flows do not cover the initial capital expenditure.
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <div className="bg-[#f0fdf4] border border-[#bbf7d0] text-[#166534] px-4 py-4 rounded-2xl flex items-start">
-                  <div className="mr-3 mt-0.5 w-5 h-5 rounded-full bg-[#166534] flex-shrink-0 flex items-center justify-center text-white text-xs">✓</div>
+              {/* Main Chart Area */}
+              <div className="bg-slate-50 border border-slate-100 rounded-3xl p-6 flex-1 flex flex-col shadow-sm min-h-[500px]">
+                <div className="flex justify-between items-start mb-2">
                   <div>
-                    <h4 className="font-bold text-sm mb-1">Low Risk</h4>
-                    <p className="text-xs">Project is financially viable with positive return over 20 years.</p>
+                    <p className="text-slate-500 font-medium">Net Present Value</p>
+                    <h2 className={`text-4xl lg:text-5xl font-bold tracking-tighter mt-1 ${npv >= 0 ? 'text-[#1B4D3E]' : 'text-[#a04540]'}`}>
+                       {formatCompactIDR(npv)}
+                    </h2>
+                  </div>
+                  <div className="flex gap-2">
+                     <div className="px-4 py-2 text-sm font-medium rounded-full bg-slate-200 text-slate-700">20y</div>
                   </div>
                 </div>
-              )}
+                <div className="flex-1 min-h-0 -mx-2 h-full">
+                  <CashFlowChart projectionData={projectionData} />
+                </div>
+              </div>
+
             </div>
 
-            {/* KPI Summary (Transactions grid equivalent) */}
-            <div className="flex-1 flex flex-col">
-              <div className="flex justify-between items-end mb-5">
-                <h3 className="font-bold text-lg text-slate-900">Summary</h3>
+            {/* RIGHT COLUMN (Narrow Sidebar) */}
+            <div className="w-full xl:w-[28%] bg-white p-6 lg:p-10 flex flex-col gap-8">
+              
+              <div className="flex-1 flex flex-col gap-6">
+                <SystemSpecsForm 
+                  plnPowerVA={plnPowerVA} setPlnPowerVA={setPlnPowerVA}
+                  capacityKWp={capacityKWp} setCapacityKWp={setCapacityKWp}
+                  maxCapacity={maxCapacity}
+                  selfConsumptionRatio={selfConsumptionRatio} setSelfConsumptionRatio={setSelfConsumptionRatio}
+                />
+                <FinancialInputs 
+                  plnTariff={plnTariff} setPlnTariff={setPlnTariff}
+                  tariffInflation={tariffInflation} setTariffInflation={setTariffInflation}
+                  capexPerKWp={capexPerKWp} setCapexPerKWp={setCapexPerKWp}
+                />
               </div>
-              <KPISummary 
-                totalCapex={totalCapex}
-                energyYear1={energyYear1}
-                savingsYear1={savingsYear1}
-                npv={npv}
-                lcoe={lcoe}
-                paybackPeriod={paybackPeriod}
-              />
+              
             </div>
-            
+          </div>
+
+          {/* KPI Summary Grid (Bottom, Full Width) */}
+          <div className="w-full p-6 lg:px-10 lg:pb-10 lg:pt-0 bg-white">
+            <h3 className="font-bold text-lg text-slate-900 mb-4 hidden">Summary</h3>
+            <KPISummary 
+              totalCapex={totalCapex}
+              energyYear1={energyYear1}
+              savingsYear1={savingsYear1}
+              npv={npv}
+              lcoe={lcoe}
+              paybackPeriod={paybackPeriod}
+            />
           </div>
 
         </div>
