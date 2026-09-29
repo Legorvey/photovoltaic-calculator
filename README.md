@@ -69,26 +69,29 @@ Open [http://localhost:5173](http://localhost:5173) with your browser to see the
 
 ## Calculation Engine & Mathematics
 
-The core of the application relies on strict mathematical models to simulate a 20-year financial lifespan for a solar installation. Below is a breakdown of the constants and formulas used.
+The core of the application relies on strict mathematical models to simulate a 20-year financial lifespan for a solar installation, compliant with the latest Indonesian regulations (Permen ESDM No. 2 Tahun 2024).
 
 ### Fixed Constants
 *   **Peak Sun Hours (PSH):** 4.10 hours/day
 *   **Performance Ratio (PR):** 78% (0.78)
 *   **Degradation Rate:** 0.5% per year
-*   **OPEX Rate:** 1.25% of CAPEX annually
+*   **OPEX Rate (Year 1):** 1.25% of CAPEX
+*   **General Inflation Rate:** 5.0% per year (used for OPEX escalation)
 *   **Inverter Replacement:** 8% of CAPEX at Year 10
 *   **Real Discount Rate:** 6.07%
 *   **Project Lifespan:** 20 Years
+*   **Export Tariff:** Rp 0 / kWh (Net-billing regulation: excess energy to grid is not compensated)
 
 ### Year 1 Baseline Metrics
 1.  **Total CAPEX:** `System Capacity (kWp) * Installation Cost (Rp/kWp)`
 2.  **Energy Production (Year 1):** `System Capacity * PSH * 365 days * Performance Ratio`
-3.  **Savings (Year 1):** `Energy Production * Self-Consumption Ratio * Utility Tariff`
+3.  **Savings (Year 1):** `Energy Production * Self-Consumption Ratio * Utility Tariff`. (Any remaining energy is exported to the grid at Rp 0 / kWh).
 
 ### 20-Year Projection Loop
-For years 1 through 20, the engine iterates the variables:
+For years 1 through 20, the engine iterates the variables dynamically:
 *   **Energy Produced (Year T):** `Energy (T-1) * (1 - Degradation Rate)`
 *   **Utility Tariff (Year T):** `Tariff (T-1) * (1 + Tariff Inflation Rate)`
+*   **OPEX (Year T):** `OPEX (T-1) * (1 + General Inflation Rate)`
 *   **Savings (Year T):** `Energy (T) * Self-Consumption Ratio * Tariff (T)`
 *   **Total Cost (Year T):** `OPEX (Year T) + Inverter Replacement Cost (if Year == 10)`
 *   **Net Cash Flow (Year T):** `Savings (Year T) - Total Cost (Year T)`
@@ -97,18 +100,18 @@ For years 1 through 20, the engine iterates the variables:
 
 #### 1. Net Present Value (NPV)
 NPV determines the current value of all future cash flows over the 20-year period.
-*   **Formula:** Sum of `(Net Cash Flow / (1 + Discount Rate)^T)` for T = 0 to 20.
-*   Year 0 Cash Flow is `-Total CAPEX`.
+*   **Formula:** $\sum_{t=1}^{20} \frac{\text{Net Cash Flow}_t}{(1 + r)^t} - \text{Total CAPEX}$
+*   Where $r$ is the Real Discount Rate (6.07%).
 
 #### 2. Levelized Cost of Energy (LCOE)
 LCOE represents the average revenue per unit of electricity generated that would be required to recover the costs of building and operating the plant.
-*   **Numerator:** Sum of discounted costs `(Total Cost / (1 + Discount Rate)^T)` for T = 0 to 20.
-*   **Denominator:** Sum of discounted energy production `(Energy Produced / (1 + Discount Rate)^T)` for T = 1 to 20.
-*   **Result:** Numerator / Denominator (Rp/kWh).
+*   **Formula:** 
+    $$\text{LCOE} = \frac{\text{CAPEX} + \sum_{t=1}^{20} \frac{\text{OPEX}_t + \text{Replacement}_t}{(1 + r)^t}}{\sum_{t=1}^{20} \frac{\text{Energy}_t}{(1 + r)^t}}$$
+*   **Note:** CAPEX is placed at Year 0 and is not re-discounted. Both the costs and the total energy produced from Year 1 to 20 are discounted using the same real discount rate $r$.
 
 #### 3. Payback Period
 The exact decimal year when the cumulative cash flow transitions from negative to positive.
-*   The application iterates through the 20-year array. When Year T is positive and Year T-1 is negative, it applies linear interpolation:
+*   The application iterates through the 20-year array. When `Cumulative Cash Flow (Year T) >= 0` and `(Year T-1) < 0`, it applies linear interpolation for precision:
 *   `Fraction = Absolute(Cumulative Cash Flow T-1) / Net Cash Flow T`
 *   `Payback Period = (T - 1) + Fraction`
 
