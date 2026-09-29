@@ -77,6 +77,7 @@ The core of the application relies on strict mathematical models to simulate a 2
 *   **Degradation Rate:** 0.5% per year
 *   **OPEX Rate (Year 1):** 1.25% of CAPEX
 *   **General Inflation Rate:** 5.0% per year (used for OPEX escalation)
+*   **Tariff Inflation Rate:** 3.0% per year (used for Utility Tariff escalation)
 *   **Inverter Replacement:** 8% of CAPEX at Year 10
 *   **Real Discount Rate:** 6.07%
 *   **Project Lifespan:** 20 Years
@@ -88,13 +89,15 @@ The core of the application relies on strict mathematical models to simulate a 2
 3.  **Savings (Year 1):** `Energy Production * Self-Consumption Ratio * Utility Tariff`. (Any remaining energy is exported to the grid at Rp 0 / kWh).
 
 ### 20-Year Projection Loop
-For years 1 through 20, the engine iterates the variables dynamically:
+The projection maintains an array where **Year 0** represents the initial investment (`Cumulative Cash Flow = -Total CAPEX`). For **Year 1 to 20**, the engine iterates dynamically:
+
 *   **Energy Produced (Year T):** `Energy (T-1) * (1 - Degradation Rate)`
 *   **Utility Tariff (Year T):** `Tariff (T-1) * (1 + Tariff Inflation Rate)`
 *   **OPEX (Year T):** `OPEX (T-1) * (1 + General Inflation Rate)`
 *   **Savings (Year T):** `Energy (T) * Self-Consumption Ratio * Tariff (T)`
 *   **Total Cost (Year T):** `OPEX (Year T) + Inverter Replacement Cost (if Year == 10)`
 *   **Net Cash Flow (Year T):** `Savings (Year T) - Total Cost (Year T)`
+*   **Cumulative Cash Flow (Year T):** `Cumulative Cash Flow (T-1) + Net Cash Flow (T)`
 
 ### Key Performance Indicators (KPIs)
 
@@ -114,6 +117,7 @@ The exact decimal year when the cumulative cash flow transitions from negative t
 *   The application iterates through the 20-year array. When `Cumulative Cash Flow (Year T) >= 0` and `(Year T-1) < 0`, it applies linear interpolation for precision:
 *   `Fraction = Absolute(Cumulative Cash Flow T-1) / Net Cash Flow T`
 *   `Payback Period = (T - 1) + Fraction`
+*   If the cumulative cash flow never becomes positive within 20 years, it returns `> 20 Years`.
 
 ## Project Structure
 

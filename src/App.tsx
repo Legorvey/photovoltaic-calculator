@@ -18,6 +18,7 @@ const DISCOUNT_RATE = 0.0607; // 6.07% real discount rate
 const INVERTER_REPLACEMENT_RATE = 0.08; // 8% of CAPEX
 const INVERTER_REPLACEMENT_YEAR = 10;
 const GENERAL_INFLATION_RATE = 0.05; // 5% general inflation for OPEX
+const TARIFF_INFLATION_RATE = 0.03; // 3% per year for basic electricity tariff
 
 export default function App() {
   // Print Ref
@@ -66,7 +67,7 @@ export default function App() {
       cumulativeCashFlow: cumulative,
     });
 
-    let currentEnergy = energyYear1;
+    let currentEnergy = capacityKWp * PSH_PER_DAY * 365 * PERFORMANCE_RATIO;
     let currentTariff = plnTariff;
     let currentOpex = totalCapex * OPEX_RATE;
 
@@ -74,14 +75,13 @@ export default function App() {
     for (let year = 1; year <= PROJECT_LIFESPAN; year++) {
       if (year > 1) {
         currentEnergy = currentEnergy * (1 - DEGRADATION_RATE);
-        currentTariff = currentTariff * (1 + tariffInflation / 100);
         currentOpex = currentOpex * (1 + GENERAL_INFLATION_RATE);
+        currentTariff = currentTariff * (1 + TARIFF_INFLATION_RATE);
       }
       
-      const savings = currentEnergy * (selfConsumptionRatio / 100) * currentTariff;
-      const opex = currentOpex;
       const replacementCost = (year === INVERTER_REPLACEMENT_YEAR) ? (totalCapex * INVERTER_REPLACEMENT_RATE) : 0;
-      const totalCost = opex + replacementCost;
+      const totalCost = currentOpex + replacementCost;
+      const savings = currentEnergy * (selfConsumptionRatio / 100) * currentTariff;
       const netCashFlow = savings - totalCost;
       
       cumulative += netCashFlow;
@@ -91,7 +91,7 @@ export default function App() {
         energyProduced: currentEnergy,
         tariff: currentTariff,
         savings,
-        opex,
+        opex: currentOpex,
         replacementCost,
         totalCost,
         netCashFlow,
@@ -100,49 +100,49 @@ export default function App() {
     }
 
     return data;
-  }, [totalCapex, energyYear1, plnTariff, tariffInflation, selfConsumptionRatio]);
+  }, [totalCapex, capacityKWp, plnTariff, selfConsumptionRatio]);
 
   // --- 3. KPI Calculations ---
   const { npv, lcoe, paybackPeriod } = useMemo(() => {
     if (projectionData.length === 0) return { npv: 0, lcoe: 0, paybackPeriod: "> 20 Years" };
 
-    let npvCalc = 0;
-    let lcoeNumerator = 0;
-    let lcoeDenominator = 0;
+    let npvCalc = -totalCapex;
+    let discountedCosts = 0;
+    let discountedEnergy = 0;
     let payback: string | number = "> 20 Years";
     let foundPayback = false;
 
-    for (let i = 0; i <= PROJECT_LIFESPAN; i++) {
-      const row = projectionData[i];
-      const discountFactor = Math.pow(1 + DISCOUNT_RATE, row.year);
+    // Iterate strictly from Year 1 to 20 for exact KPI tracking
+    for (let T = 1; T <= PROJECT_LIFESPAN; T++) {
+      const row = projectionData[T];
+      const discountFactor = Math.pow(1 + DISCOUNT_RATE, T);
 
+      // A. Net Present Value (NPV)
       npvCalc += (row.netCashFlow / discountFactor);
       
-      if (row.year === 0) {
-        lcoeNumerator += totalCapex;
-      } else {
-        lcoeNumerator += ((row.opex + row.replacementCost) / discountFactor);
-        lcoeDenominator += (row.energyProduced / discountFactor);
-      }
+      // B. Levelized Cost of Energy (LCOE)
+      discountedCosts += (row.totalCost / discountFactor);
+      discountedEnergy += (row.energyProduced / discountFactor);
 
-      if (!foundPayback && row.cumulativeCashFlow >= 0 && row.year > 0) {
-        const prevRow = projectionData[i - 1];
+      // C. Payback Period (Precision Linear Interpolation)
+      if (!foundPayback && row.cumulativeCashFlow >= 0) {
+        const prevRow = projectionData[T - 1];
         if (prevRow.cumulativeCashFlow < 0) {
           const fraction = Math.abs(prevRow.cumulativeCashFlow) / row.netCashFlow;
-          payback = prevRow.year + fraction;
+          payback = (T - 1) + fraction;
           foundPayback = true;
         }
       }
     }
 
-    const lcoeCalc = lcoeDenominator > 0 ? (lcoeNumerator / lcoeDenominator) : 0;
+    const lcoeCalc = discountedEnergy > 0 ? ((totalCapex + discountedCosts) / discountedEnergy) : 0;
 
     return {
       npv: npvCalc,
       lcoe: lcoeCalc,
       paybackPeriod: typeof payback === 'number' ? `${payback.toFixed(1)} Years` : payback,
     };
-  }, [projectionData]);
+  }, [projectionData, totalCapex]);
 
   return (
     <div className="min-h-screen bg-white flex justify-center items-center font-sans text-slate-800">
