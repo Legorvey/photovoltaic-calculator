@@ -17,6 +17,7 @@ const PROJECT_LIFESPAN = 20; // Years
 const DISCOUNT_RATE = 0.0607; // 6.07% real discount rate
 const INVERTER_REPLACEMENT_RATE = 0.08; // 8% of CAPEX
 const INVERTER_REPLACEMENT_YEAR = 10;
+const GENERAL_INFLATION_RATE = 0.05; // 5% general inflation for OPEX
 
 export default function App() {
   // Print Ref
@@ -29,7 +30,7 @@ export default function App() {
   // State Management (Inputs)
   const [plnPowerVA, setPlnPowerVA] = useState<number>(2200);
   const [capacityKWp, setCapacityKWp] = useState<number>(2.2);
-  const [selfConsumptionRatio, setSelfConsumptionRatio] = useState<number>(70);
+  const [selfConsumptionRatio, setSelfConsumptionRatio] = useState<number>(100);
   const [plnTariff, setPlnTariff] = useState<number>(1444.70);
   const [tariffInflation, setTariffInflation] = useState<number>(4);
   const [capexPerKWp, setCapexPerKWp] = useState<number>(16000000);
@@ -67,16 +68,18 @@ export default function App() {
 
     let currentEnergy = energyYear1;
     let currentTariff = plnTariff;
+    let currentOpex = totalCapex * OPEX_RATE;
 
     // Iterative Generation
     for (let year = 1; year <= PROJECT_LIFESPAN; year++) {
       if (year > 1) {
         currentEnergy = currentEnergy * (1 - DEGRADATION_RATE);
         currentTariff = currentTariff * (1 + tariffInflation / 100);
+        currentOpex = currentOpex * (1 + GENERAL_INFLATION_RATE);
       }
       
       const savings = currentEnergy * (selfConsumptionRatio / 100) * currentTariff;
-      const opex = totalCapex * OPEX_RATE;
+      const opex = currentOpex;
       const replacementCost = (year === INVERTER_REPLACEMENT_YEAR) ? (totalCapex * INVERTER_REPLACEMENT_RATE) : 0;
       const totalCost = opex + replacementCost;
       const netCashFlow = savings - totalCost;
@@ -114,12 +117,15 @@ export default function App() {
       const discountFactor = Math.pow(1 + DISCOUNT_RATE, row.year);
 
       npvCalc += (row.netCashFlow / discountFactor);
-      lcoeNumerator += (row.totalCost / discountFactor);
-      if (row.year > 0) {
+      
+      if (row.year === 0) {
+        lcoeNumerator += totalCapex;
+      } else {
+        lcoeNumerator += ((row.opex + row.replacementCost) / discountFactor);
         lcoeDenominator += (row.energyProduced / discountFactor);
       }
 
-      if (!foundPayback && row.cumulativeCashFlow > 0 && row.year > 0) {
+      if (!foundPayback && row.cumulativeCashFlow >= 0 && row.year > 0) {
         const prevRow = projectionData[i - 1];
         if (prevRow.cumulativeCashFlow < 0) {
           const fraction = Math.abs(prevRow.cumulativeCashFlow) / row.netCashFlow;
