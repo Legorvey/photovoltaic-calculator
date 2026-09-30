@@ -103,19 +103,13 @@ The projection maintains an array where **Year 0** represents the initial invest
 
 #### 1. Net Present Value (NPV)
 NPV determines the current value of all future cash flows over the 20-year period.
-*   **Formula:** `NPV = SUM[t=1..20]( Net_Cash_Flow(t) / (1+r)^t ) - Total_CAPEX`
-*   Where `r` is the Real Discount Rate (6.07%).
+*   **Formula:** $\sum_{t=1}^{20} \frac{\text{Net Cash Flow}_t}{(1 + r)^t} - \text{Total CAPEX}$
+*   Where $r$ is the Real Discount Rate (6.07%).
 
 #### 2. Levelized Cost of Energy (LCOE)
 LCOE represents the average revenue per unit of electricity generated that would be required to recover the costs of building and operating the plant.
-
-```
-        CAPEX + SUM[t=1..20]( (OPEX(t) + Replacement(t)) / (1+r)^t )
-LCOE = ---------------------------------------------------------------
-               SUM[t=1..20]( Energy(t) / (1+r)^t )
-```
-
-*   **Note:** CAPEX is placed at Year 0 and is not re-discounted. Both the costs and the total energy produced from Year 1 to 20 are discounted using the same real discount rate `r`.
+*   **Formula:** $\text{LCOE} = \frac{\text{CAPEX} + \sum_{t=1}^{20} \frac{\text{OPEX}_{t} + \text{Replacement}_{t}}{(1 + r)^{t}}}{\sum_{t=1}^{20} \frac{\text{Energy}_{t}}{(1 + r)^{t}}}$
+*   **Note:** CAPEX is placed at Year 0 and is not re-discounted. Both the costs and the total energy produced from Year 1 to 20 are discounted using the same real discount rate $r$.
 
 #### 3. Payback Period
 The exact decimal year when the cumulative cash flow transitions from negative to positive.
