@@ -109,7 +109,11 @@ NPV determines the current value of all future cash flows over the 20-year perio
 #### 2. Levelized Cost of Energy (LCOE)
 LCOE represents the average revenue per unit of electricity generated that would be required to recover the costs of building and operating the plant.
 *   **Formula:** 
-    $$\text{LCOE} = \frac{\text{CAPEX} + \sum_{t=1}^{20} \frac{\text{OPEX}_t + \text{Replacement}_t}{(1 + r)^t}}{\sum_{t=1}^{20} \frac{\text{Energy}_t}{(1 + r)^t}}$$
+
+    $$
+    \text{LCOE} = \frac{\text{CAPEX} + \sum_{t=1}^{20} \frac{\text{OPEX}_t + \text{Replacement}_t}{(1 + r)^t}}{\sum_{t=1}^{20} \frac{\text{Energy}_t}{(1 + r)^t}}
+    $$
+
 *   **Note:** CAPEX is placed at Year 0 and is not re-discounted. Both the costs and the total energy produced from Year 1 to 20 are discounted using the same real discount rate $r$.
 
 #### 3. Payback Period
