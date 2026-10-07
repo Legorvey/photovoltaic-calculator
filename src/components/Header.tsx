@@ -13,7 +13,7 @@ export default function Header({ handlePrint, npv }: HeaderProps) {
       <div className="flex items-center gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-6 h-6 rounded bg-[#1B4D3E] flex items-center justify-center">
+            <div className="w-6 h-6 rounded bg-gradient-to-br from-emerald-700 to-teal-900 shadow-sm flex items-center justify-center">
               <div className="w-2 h-2 rounded-full bg-white"></div>
             </div>
             <h1 className="text-xl md:text-2xl font-bold text-slate-900">
@@ -23,11 +23,11 @@ export default function Header({ handlePrint, npv }: HeaderProps) {
             {/* Risk Score */}
             <div className="ml-4 hidden md:block">
               {npv < 0 ? (
-                <div className="bg-[#fcf3f2] border border-[#c25953] text-[#a04540] px-3 py-1 rounded-full flex items-center">
+                <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 text-red-700 px-3 py-1 rounded-full flex items-center">
                   <span className="font-bold text-xs">High Risk</span>
                 </div>
               ) : (
-                <div className="bg-[#f0fdf4] border border-[#bbf7d0] text-[#166534] px-3 py-1 rounded-full flex items-center">
+                <div className="bg-emerald-50/80 backdrop-blur-sm border border-emerald-200 text-emerald-700 px-3 py-1 rounded-full flex items-center">
                   <span className="font-bold text-xs">Low Risk</span>
                 </div>
               )}
@@ -44,11 +44,11 @@ export default function Header({ handlePrint, npv }: HeaderProps) {
         {/* Mobile Risk Score */}
         <div className="md:hidden flex items-center mr-2">
           {npv < 0 ? (
-            <div className="bg-[#fcf3f2] border border-[#c25953] text-[#a04540] px-3 py-1 rounded-full flex items-center">
+            <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 text-red-700 px-3 py-1 rounded-full flex items-center">
               <span className="font-bold text-xs">High Risk</span>
             </div>
           ) : (
-            <div className="bg-[#f0fdf4] border border-[#bbf7d0] text-[#166534] px-3 py-1 rounded-full flex items-center">
+            <div className="bg-emerald-50/80 backdrop-blur-sm border border-emerald-200 text-emerald-700 px-3 py-1 rounded-full flex items-center">
               <span className="font-bold text-xs">Low Risk</span>
             </div>
           )}

@@ -26,7 +26,7 @@ export default function SystemSpecsForm({
   isPvSufficient, minPvRequired, vSys
 }: SystemSpecsFormProps) {
   return (
-    <Card className="rounded-3xl border-slate-100 bg-slate-50 shadow-sm print:shadow-none print:border-none print:p-0">
+    <Card className="rounded-3xl border-slate-200/60 bg-white/60 backdrop-blur-md shadow-sm transition-all duration-300 hover:shadow-md print:shadow-none print:border-none print:p-0">
       <CardHeader className="p-6 pb-2 print:hidden flex flex-row items-center justify-between space-y-0">
         <div>
           <CardTitle className="text-base font-bold text-slate-900">System Specifications</CardTitle>
@@ -49,7 +49,7 @@ export default function SystemSpecsForm({
             step={0.1}
             value={dailyLoad}
             onChange={(e) => setDailyLoad(Number(e.target.value))}
-            className="w-full bg-slate-50 border-slate-200 h-8 text-sm"
+            className="w-full bg-white/50 border-slate-200/60 backdrop-blur-sm focus:bg-white transition-colors h-8 text-sm"
           />
           <span className="hidden print:block text-base font-semibold text-slate-900">{formatNumber(dailyLoad, 1)} kWh/day</span>
         </div>

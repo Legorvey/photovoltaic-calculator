@@ -19,7 +19,7 @@ export default function KPISummary({
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
 
-      <Card className="shadow-sm border-slate-100 rounded-2xl bg-white">
+      <Card className="shadow-sm border-slate-200/60 rounded-2xl bg-white/70 backdrop-blur-md transition-all duration-300 hover:shadow-md hover:-translate-y-1">
         <CardContent className="p-4 flex flex-col justify-between h-full">
           <div>
             <p className="text-slate-500 text-[10px] font-semibold">
@@ -35,7 +35,7 @@ export default function KPISummary({
         </CardContent>
       </Card>
 
-      <Card className="shadow-sm border-slate-100 rounded-2xl bg-white">
+      <Card className="shadow-sm border-slate-200/60 rounded-2xl bg-white/70 backdrop-blur-md transition-all duration-300 hover:shadow-md hover:-translate-y-1">
         <CardContent className="p-4 flex flex-col justify-between h-full">
           <div>
             <p className="text-slate-500 text-[10px] font-semibold">
@@ -51,7 +51,7 @@ export default function KPISummary({
         </CardContent>
       </Card>
 
-      <Card className="shadow-sm border-slate-100 rounded-2xl bg-white">
+      <Card className="shadow-sm border-slate-200/60 rounded-2xl bg-white/70 backdrop-blur-md transition-all duration-300 hover:shadow-md hover:-translate-y-1">
         <CardContent className="p-4 flex flex-col justify-between h-full">
           <div>
             <p className="text-slate-500 text-[10px] font-semibold">
@@ -67,7 +67,7 @@ export default function KPISummary({
         </CardContent>
       </Card>
 
-      <Card className={`shadow-sm rounded-2xl ${isNpvPositive ? 'border-slate-100 bg-slate-100' : 'border-[#c25953] bg-[#fcf3f2]'}`}>
+      <Card className={`shadow-sm rounded-2xl transition-all duration-300 hover:shadow-md hover:-translate-y-1 ${isNpvPositive ? 'border-emerald-200/60 bg-emerald-50/50 backdrop-blur-md' : 'border-red-200/60 bg-red-50/50 backdrop-blur-md'}`}>
         <CardContent className="p-4 flex flex-col justify-between h-full">
           <div>
             <p className={`text-[10px] font-semibold ${isNpvPositive ? 'text-slate-500' : 'text-[#a04540]'}`}>
@@ -85,7 +85,7 @@ export default function KPISummary({
         </CardContent>
       </Card>
 
-      <Card className="shadow-sm border-slate-100 rounded-2xl bg-white">
+      <Card className="shadow-sm border-slate-200/60 rounded-2xl bg-white/70 backdrop-blur-md transition-all duration-300 hover:shadow-md hover:-translate-y-1">
         <CardContent className="p-4 flex flex-col justify-between h-full">
           <div>
             <p className="text-slate-500 text-[10px] font-semibold">
@@ -101,7 +101,7 @@ export default function KPISummary({
         </CardContent>
       </Card>
 
-      <Card className="shadow-sm border-slate-100 rounded-2xl bg-white">
+      <Card className="shadow-sm border-slate-200/60 rounded-2xl bg-white/70 backdrop-blur-md transition-all duration-300 hover:shadow-md hover:-translate-y-1">
         <CardContent className="p-4 flex flex-col justify-between h-full">
           <div>
             <p className="text-slate-500 text-[10px] font-semibold">

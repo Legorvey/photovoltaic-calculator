@@ -47,7 +47,7 @@ export default function App() {
   });
 
   return (
-    <div className="min-h-screen bg-white flex justify-center items-center font-sans text-slate-800">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100/80 flex justify-center items-center font-sans text-slate-800">
       <div className="w-full max-w-[1500px] my-auto">
         <div ref={componentRef} className="flex flex-col print:flex-col print:p-8">
           
@@ -61,7 +61,7 @@ export default function App() {
               </div>
 
               {/* Diesel vs Microgrid Banner */}
-              <div className="bg-[#eefcf2] border border-[#d1f4e0] rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-center text-[#1B4D3E] shadow-sm">
+              <div className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-center text-emerald-950 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md">
                 <div className="flex flex-col">
                   <span className="text-xs font-semibold text-[#357a5e] mb-1">Cost Comparison</span>
                   <p className="text-sm">
@@ -69,13 +69,13 @@ export default function App() {
                     <span className="font-bold">Microgrid: Rp {lcoe?.toLocaleString('id-ID', { maximumFractionDigits: 0 })}/kWh</span>
                   </p>
                 </div>
-                <div className="mt-2 sm:mt-0 bg-[#d1f4e0] text-[#1B4D3E] px-3 py-1.5 rounded-lg text-sm font-bold text-center">
+                <div className="mt-2 sm:mt-0 bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-lg text-sm font-bold text-center">
                   {lcoeSavingsPercentage?.toFixed(1) || 0}% more cost-effective
                 </div>
               </div>
 
               {/* Main Chart Area */}
-              <div className="bg-slate-50 border border-slate-100 rounded-3xl p-6 flex-1 flex flex-col shadow-sm min-h-[500px]">
+              <div className="bg-white/60 backdrop-blur-md border border-slate-200/60 rounded-3xl p-6 flex-1 flex flex-col shadow-sm min-h-[500px] transition-all duration-300 hover:shadow-md">
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <p className="text-slate-500 font-medium">Net Present Value</p>
@@ -95,7 +95,7 @@ export default function App() {
             </div>
 
             {/* RIGHT COLUMN (Narrow Sidebar) */}
-            <div className="w-full xl:w-[28%] bg-white p-6 lg:p-10 flex flex-col gap-8">
+            <div className="w-full xl:w-[28%] p-6 lg:p-10 flex flex-col gap-8">
               
               <div className="flex-1 flex flex-col gap-6">
                 <SystemSpecsForm 
@@ -117,7 +117,7 @@ export default function App() {
           </div>
 
           {/* KPI Summary Grid (Bottom, Full Width) */}
-          <div className="w-full p-6 lg:px-10 lg:pb-10 lg:pt-0 bg-white">
+          <div className="w-full p-6 lg:px-10 lg:pb-10 lg:pt-0">
             <h3 className="font-bold text-lg text-slate-900 mb-4 hidden">Summary</h3>
             <KPISummary 
               grossCapex={grossCapex}

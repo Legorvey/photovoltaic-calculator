@@ -20,7 +20,7 @@ export default function FinancialInputs({
   capexPv, setCapexPv
 }: FinancialInputsProps) {
   return (
-    <Card className="rounded-3xl border-slate-100 bg-slate-50 shadow-sm print:shadow-none print:border-none print:p-0">
+    <Card className="rounded-3xl border-slate-200/60 bg-white/60 backdrop-blur-md shadow-sm transition-all duration-300 hover:shadow-md print:shadow-none print:border-none print:p-0">
       <CardHeader className="p-6 pb-2 print:hidden">
         <CardTitle className="text-base font-bold text-slate-900">Financial Assumptions</CardTitle>
         <CardDescription className="text-xs">Tariff, subsidy and capital expenditure</CardDescription>
@@ -36,7 +36,7 @@ export default function FinancialInputs({
             id="bumdesTariff"
             value={bumdesTariff}
             onChange={(e) => setBumdesTariff(Number(e.target.value))}
-            className="w-full bg-slate-50 border-slate-200 h-8 text-sm"
+            className="w-full bg-white/50 border-slate-200/60 backdrop-blur-sm focus:bg-white transition-colors h-8 text-sm"
           />
           <span className="hidden print:block text-base font-semibold text-slate-900">{formatIDR(bumdesTariff)}/kWh</span>
         </div>
@@ -71,7 +71,7 @@ export default function FinancialInputs({
             id="capexPv"
             value={capexPv}
             onChange={(e) => setCapexPv(Number(e.target.value))}
-            className="w-full bg-slate-50 border-slate-200 h-8 text-sm"
+            className="w-full bg-white/50 border-slate-200/60 backdrop-blur-sm focus:bg-white transition-colors h-8 text-sm"
           />
           <span className="hidden print:block text-base font-semibold text-slate-900">{formatIDR(capexPv)}/kWp</span>
         </div>
