@@ -16,7 +16,7 @@ export default function Header({ handlePrint, npv }: HeaderProps) {
             <div className="w-6 h-6 rounded bg-[#1B4D3E] flex items-center justify-center">
               <div className="w-2 h-2 rounded-full bg-white"></div>
             </div>
-            <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
+            <h1 className="text-xl md:text-2xl font-bold text-slate-900">
               Solar PV Report
             </h1>
             

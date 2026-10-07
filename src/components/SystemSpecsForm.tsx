@@ -32,7 +32,7 @@ export default function SystemSpecsForm({
           <CardTitle className="text-base font-bold text-slate-900">System Specifications</CardTitle>
           <CardDescription className="text-xs">Load, storage and PV sizing</CardDescription>
         </div>
-        <span className="text-[10px] font-semibold tracking-wider text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
+        <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
           SYS {vSys}V DC
         </span>
       </CardHeader>

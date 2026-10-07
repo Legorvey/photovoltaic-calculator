@@ -22,10 +22,10 @@ export default function KPISummary({
       <Card className="shadow-sm border-slate-100 rounded-2xl bg-white">
         <CardContent className="p-4 flex flex-col justify-between h-full">
           <div>
-            <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-wider">
+            <p className="text-slate-500 text-[10px] font-semibold">
               Gross CAPEX
             </p>
-            <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+            <h3 className="text-xl font-bold text-slate-900">
               {formatCompactIDR(grossCapex)}
             </h3>
           </div>
@@ -38,10 +38,10 @@ export default function KPISummary({
       <Card className="shadow-sm border-slate-100 rounded-2xl bg-white">
         <CardContent className="p-4 flex flex-col justify-between h-full">
           <div>
-            <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-wider">
+            <p className="text-slate-500 text-[10px] font-semibold">
               Net CAPEX
             </p>
-            <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+            <h3 className="text-xl font-bold text-slate-900">
               {formatCompactIDR(netCapex)}
             </h3>
           </div>
@@ -54,10 +54,10 @@ export default function KPISummary({
       <Card className="shadow-sm border-slate-100 rounded-2xl bg-white">
         <CardContent className="p-4 flex flex-col justify-between h-full">
           <div>
-            <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-wider">
+            <p className="text-slate-500 text-[10px] font-semibold">
               Battery Capacity
             </p>
-            <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+            <h3 className="text-xl font-bold text-slate-900">
               {formatNumber(batteryCapacityKwh, 1)} <span className="text-sm font-medium text-slate-500">kWh</span>
             </h3>
           </div>
@@ -70,10 +70,10 @@ export default function KPISummary({
       <Card className={`shadow-sm rounded-2xl ${isNpvPositive ? 'border-slate-100 bg-slate-100' : 'border-[#c25953] bg-[#fcf3f2]'}`}>
         <CardContent className="p-4 flex flex-col justify-between h-full">
           <div>
-            <p className={`text-[10px] font-semibold uppercase tracking-wider ${isNpvPositive ? 'text-slate-500' : 'text-[#a04540]'}`}>
+            <p className={`text-[10px] font-semibold ${isNpvPositive ? 'text-slate-500' : 'text-[#a04540]'}`}>
               Net Present Value (NPV)
             </p>
-            <h3 className={`text-xl font-bold tracking-tight ${isNpvPositive ? 'text-[#1B4D3E]' : 'text-[#a04540]'}`}>
+            <h3 className={`text-xl font-bold ${isNpvPositive ? 'text-[#1B4D3E]' : 'text-[#a04540]'}`}>
               {formatCompactIDR(npv)}
             </h3>
           </div>
@@ -88,10 +88,10 @@ export default function KPISummary({
       <Card className="shadow-sm border-slate-100 rounded-2xl bg-white">
         <CardContent className="p-4 flex flex-col justify-between h-full">
           <div>
-            <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-wider">
+            <p className="text-slate-500 text-[10px] font-semibold">
               LCOE
             </p>
-            <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+            <h3 className="text-xl font-bold text-slate-900">
               {formatIDR(lcoe)} <span className="text-sm font-medium text-slate-500">/kWh</span>
             </h3>
           </div>
@@ -104,10 +104,10 @@ export default function KPISummary({
       <Card className="shadow-sm border-slate-100 rounded-2xl bg-white">
         <CardContent className="p-4 flex flex-col justify-between h-full">
           <div>
-            <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-wider">
+            <p className="text-slate-500 text-[10px] font-semibold">
               Payback Period
             </p>
-            <h3 className="text-xl font-bold text-[#1B4D3E] tracking-tight">
+            <h3 className="text-xl font-bold text-[#1B4D3E]">
               {paybackPeriod}
             </h3>
           </div>
