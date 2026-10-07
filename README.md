@@ -9,11 +9,11 @@
 <h1 align="center">Photovoltaic Feasibility Calculator</h1>
 
 <p align="center">
-  <strong>A techno-economic analysis tool for rooftop solar PV installations.</strong>
+  <strong>A techno-economic analysis tool for off-grid rural microgrid PV + battery installations.</strong>
 </p>
 
 <p align="center">
-  A web application built to project the 20-year financial feasibility of rooftop solar systems, including Net Present Value (NPV), Levelized Cost of Energy (LCOE), and Payback Period.
+  A web application built to project the 20-year financial feasibility of off-grid microgrid systems, including Net Present Value (NPV), Levelized Cost of Energy (LCOE), and Payback Period.
 </p>
 
 <hr />
@@ -69,34 +69,37 @@ Open [http://localhost:5173](http://localhost:5173) with your browser to see the
 
 ## Calculation Engine & Mathematics
 
-The core of the application relies on strict mathematical models to simulate a 20-year financial lifespan for a solar installation, compliant with the latest Indonesian regulations (Permen ESDM No. 2 Tahun 2024).
+The core of the application relies on strict mathematical models to simulate a 20-year financial lifespan for a solar installation, tailored for rural BUMDes (Badan Usaha Milik Desa) business models.
 
 ### Fixed Constants
-*   **Peak Sun Hours (PSH):** 4.10 hours/day
-*   **Performance Ratio (PR):** 78% (0.78)
+*   **Exchange Rate:** Rp 17,887 / USD
+*   **Peak Sun Hours (PSH):** 4.96 hours/day
+*   **PV Derating Factor:** 80% (0.80)
+*   **System Voltage:** 48V DC
+*   **Depth of Discharge (DOD):** 80% (0.80)
+*   **Battery Efficiency:** 96% (0.96)
 *   **Degradation Rate:** 0.5% per year
-*   **OPEX Rate (Year 1):** 1.25% of CAPEX
-*   **General Inflation Rate:** 5.0% per year (used for OPEX escalation)
-*   **Tariff Inflation Rate:** 3.0% per year (used for Utility Tariff escalation)
-*   **Inverter Replacement:** 8% of CAPEX at Year 10
-*   **Real Discount Rate:** 6.07%
+*   **Battery CAPEX (Sodium-Ion):** Rp 1,400,000 / kWh
+*   **OPEX Rate (Year 1):** 2.0% of Gross CAPEX
+*   **OPEX Inflation Rate:** 5.0% per year
+*   **Real Discount Rate:** 10.0%
 *   **Project Lifespan:** 20 Years
-*   **Export Tariff:** Rp 0 / kWh (Net-billing regulation: excess energy to grid is not compensated)
+*   **Diesel LCOE Baseline:** $1.23 / kWh
 
-### Year 1 Baseline Metrics
-1.  **Total CAPEX:** `System Capacity (kWp) * Installation Cost (Rp/kWp)`
-2.  **Energy Production (Year 1):** `System Capacity * PSH * 365 days * Performance Ratio`
-3.  **Savings (Year 1):** `Energy Production * Self-Consumption Ratio * Utility Tariff`. (Any remaining energy is exported to the grid at Rp 0 / kWh).
+### Technical Sizing & Year 0 Investment
+1.  **Min PV Required (kWp):** `Daily Load / (PSH * PV Derating)`
+2.  **Battery Capacity (kWh):** `(Daily Load * Days of Autonomy) / (DOD * Battery Efficiency)`
+3.  **Gross CAPEX:** `(System Capacity * PV CAPEX) + (Battery Capacity * Battery CAPEX)`
+4.  **Net CAPEX:** `Gross CAPEX * (1 - (Government Subsidy / 100))` (The out-of-pocket cost for BUMDes).
 
 ### 20-Year Projection Loop
-The projection maintains an array where **Year 0** represents the initial investment (`Cumulative Cash Flow = -Total CAPEX`). For **Year 1 to 20**, the engine iterates dynamically:
+The projection maintains an array where **Year 0** represents the initial investment (`Cumulative Cash Flow = -Net CAPEX`). For **Year 1 to 20**, the engine iterates dynamically:
 
 *   **Energy Produced (Year T):** `Energy (T-1) * (1 - Degradation Rate)`
-*   **Utility Tariff (Year T):** `Tariff (T-1) * (1 + Tariff Inflation Rate)`
-*   **OPEX (Year T):** `OPEX (T-1) * (1 + General Inflation Rate)`
-*   **Savings (Year T):** `Energy (T) * Self-Consumption Ratio * Tariff (T)`
-*   **Total Cost (Year T):** `OPEX (Year T) + Inverter Replacement Cost (if Year == 10)`
-*   **Net Cash Flow (Year T):** `Savings (Year T) - Total Cost (Year T)`
+*   **Revenue (Flat):** `Daily Load * 365 * BUMDes Tariff`
+*   **OPEX (Year T):** `OPEX (T-1) * (1 + OPEX Inflation Rate)`
+*   **Battery Replacement:** Triggered at Year 10 (Full cost of new batteries based on capacity).
+*   **Net Cash Flow (Year T):** `Revenue - OPEX (Year T) - Battery Replacement (if applicable)`
 *   **Cumulative Cash Flow (Year T):** `Cumulative Cash Flow (T-1) + Net Cash Flow (T)`
 
 ### Key Performance Indicators (KPIs)
@@ -104,17 +107,17 @@ The projection maintains an array where **Year 0** represents the initial invest
 #### 1. Net Present Value (NPV)
 NPV determines the current value of all future cash flows over the 20-year period.
 *   **Formula:** $\sum_{t=1}^{20} \frac{\text{Net Cash Flow}_t}{(1 + r)^t} - \text{Total CAPEX}$
-*   Where $r$ is the Real Discount Rate (6.07%).
+*   Where $r$ is the Real Discount Rate (10.0%).
 
 #### 2. Levelized Cost of Energy (LCOE)
-LCOE represents the average revenue per unit of electricity generated that would be required to recover the costs of building and operating the plant.
+LCOE represents the average revenue per unit of electricity served that would be required to recover the costs of building and operating the plant.
 *   **Formula:**
 
 ```math
-\text{LCOE} = \frac{\text{CAPEX} + \sum_{t=1}^{20} \frac{\text{OPEX}_{t} + \text{Replacement}_{t}}{(1 + r)^{t}}}{\sum_{t=1}^{20} \frac{\text{Energy}_{t}}{(1 + r)^{t}}}
+\text{LCOE} = \frac{\text{Gross CAPEX} + \sum_{t=1}^{20} \frac{\text{OPEX}_{t} + \text{Battery Replacement}_{t}}{(1 + r)^{t}}}{\sum_{t=1}^{20} \frac{\text{Energy Served}_{t}}{(1 + r)^{t}}}
 ```
 
-*   **Note:** CAPEX is placed at Year 0 and is not re-discounted. Both the costs and the total energy produced from Year 1 to 20 are discounted using the same real discount rate $r$.
+*   **Note:** Gross CAPEX is placed at Year 0 and is not re-discounted. Both the costs and the total energy served (Daily Load * 365) from Year 1 to 20 are discounted using the same real discount rate $r$.
 
 #### 3. Payback Period
 The exact decimal year when the cumulative cash flow transitions from negative to positive.
@@ -142,5 +145,5 @@ photovoltaic-calculator/
 
 <hr />
 <p align="center">
-  Built for techno-economic feasibility analysis of rooftop solar systems.
+  Built for techno-economic feasibility analysis of off-grid microgrid solar systems.
 </p>
