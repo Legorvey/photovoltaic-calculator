@@ -16,7 +16,7 @@ export default function CashFlowChart({ projectionData }: CashFlowChartProps) {
   }));
 
   return (
-    <div className="w-full h-full min-h-[300px]">
+    <div className="w-full" style={{ height: '400px', minHeight: '400px' }}>
       <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={chartData} stackOffset="sign" margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />

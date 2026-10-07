@@ -5,6 +5,7 @@ import SystemSpecsForm from './components/SystemSpecsForm';
 import FinancialInputs from './components/FinancialInputs';
 import KPISummary from './components/KPISummary';
 import CashFlowChart from './components/CashFlowChart';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatCompactIDR } from './utils/formatters';
 import { useFinancialProjection } from './hooks/useFinancialProjection';
 import { V_SYS } from './constants/engine';
@@ -24,6 +25,7 @@ export default function App() {
   const [bumdesTariff, setBumdesTariff] = useState<number>(2500); // IDR/kWh
   const [systemCapacity, setSystemCapacity] = useState<number>(10.4); // kWp
   const [capexPv, setCapexPv] = useState<number>(16000000); // IDR/kWp
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const {
     minPvRequired,
@@ -94,10 +96,33 @@ export default function App() {
 
             </div>
 
-            {/* RIGHT COLUMN (Narrow Sidebar) */}
-            <div className="w-full xl:w-[28%] p-6 lg:p-10 flex flex-col gap-8">
+            {/* MOBILE OVERLAY */}
+            {isSidebarOpen && (
+              <div 
+                className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 xl:hidden transition-opacity"
+                onClick={() => setIsSidebarOpen(false)}
+              />
+            )}
+
+            {/* RIGHT COLUMN (Narrow Sidebar / Mobile Drawer) */}
+            <div className={`
+              fixed xl:relative inset-y-0 right-0 z-50
+              w-[85vw] sm:w-[400px] xl:w-[28%]
+              transition-transform duration-300 ease-in-out
+              ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full xl:translate-x-0'}
+            `}>
               
-              <div className="flex-1 flex flex-col gap-6">
+              {/* Tab Handle (Visible only on mobile/tablet) */}
+              <button 
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="xl:hidden absolute top-1/3 -left-10 z-50 w-10 h-16 bg-white/95 backdrop-blur-md flex items-center justify-center rounded-l-xl shadow-[-4px_4px_10px_rgba(0,0,0,0.05)] border-y border-l border-slate-200/60 text-slate-600 hover:text-slate-900 transition-colors"
+              >
+                {isSidebarOpen ? <ChevronRight size={24} /> : <ChevronLeft size={24} />}
+              </button>
+              
+              {/* Inner container for scroll and background */}
+              <div className="w-full h-full bg-white/95 xl:bg-transparent backdrop-blur-xl xl:backdrop-blur-none p-6 lg:p-10 flex flex-col gap-8 shadow-2xl xl:shadow-none overflow-y-auto border-l border-slate-200/60 xl:border-none">
+                <div className="flex-1 flex flex-col gap-6">
                 <SystemSpecsForm 
                   dailyLoad={dailyLoad} setDailyLoad={setDailyLoad}
                   daysOfAutonomy={daysOfAutonomy} setDaysOfAutonomy={setDaysOfAutonomy}
@@ -111,6 +136,7 @@ export default function App() {
                   bumdesTariff={bumdesTariff} setBumdesTariff={setBumdesTariff}
                   capexPv={capexPv} setCapexPv={setCapexPv}
                 />
+              </div>
               </div>
               
             </div>
