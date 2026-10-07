@@ -1,0 +1,14 @@
+export const EXCHANGE_RATE = 17887; // USD to IDR
+export const PSH = 4.96; // Peak Sun Hours
+export const PV_DERATING = 0.80;
+export const DEGRADATION_RATE = 0.005; // 0.5% per year
+export const V_SYS = 48; // System Voltage (V)
+export const DOD = 0.80; // Depth of Discharge
+export const BATTERY_EFFICIENCY = 0.96;
+export const DISCOUNT_RATE = 0.10; // 10%
+export const PROJECT_LIFESPAN = 20; // Years
+export const CAPEX_BATTERY_PER_KWH = 1400000; // IDR/kWh (Sodium-Ion)
+export const OPEX_RATE_YEAR_1 = 0.02; // 2% of Gross CAPEX
+export const OPEX_INFLATION = 0.05; // 5% per year
+export const DIESEL_LCOE_BASELINE_USD = 1.23; // USD/kWh
+export const BATTERY_REPLACEMENT_YEAR = 10;
