@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { YearlyData } from './types';
 import Header from './components/Header';
@@ -9,16 +9,20 @@ import CashFlowChart from './components/CashFlowChart';
 import { formatCompactIDR } from './utils/formatters';
 
 // --- 1. Hardcoded Engine Constants ---
-const PSH_PER_DAY = 4.10; // Peak Sun Hours
-const PERFORMANCE_RATIO = 0.78; // System efficiency
+const EXCHANGE_RATE = 17887; // USD to IDR
+const PSH = 4.96; // Peak Sun Hours
+const PV_DERATING = 0.80;
 const DEGRADATION_RATE = 0.005; // 0.5% per year
-const OPEX_RATE = 0.0125; // 1.25% of CAPEX
+const V_SYS = 48; // System Voltage (V)
+const DOD = 0.80; // Depth of Discharge
+const BATTERY_EFFICIENCY = 0.96;
+const DISCOUNT_RATE = 0.10; // 10%
 const PROJECT_LIFESPAN = 20; // Years
-const DISCOUNT_RATE = 0.0607; // 6.07% real discount rate
-const INVERTER_REPLACEMENT_RATE = 0.08; // 8% of CAPEX
-const INVERTER_REPLACEMENT_YEAR = 10;
-const GENERAL_INFLATION_RATE = 0.05; // 5% general inflation for OPEX
-const TARIFF_INFLATION_RATE = 0.03; // 3% per year for basic electricity tariff
+const CAPEX_BATTERY_PER_KWH = 1400000; // IDR/kWh (Sodium-Ion)
+const OPEX_RATE_YEAR_1 = 0.02; // 2% of Gross CAPEX
+const OPEX_INFLATION = 0.05; // 5% per year
+const DIESEL_LCOE_BASELINE_USD = 1.23; // USD/kWh
+const BATTERY_REPLACEMENT_YEAR = 10;
 
 export default function App() {
   // Print Ref
@@ -29,100 +33,82 @@ export default function App() {
   });
 
   // State Management (Inputs)
-  const [plnPowerVA, setPlnPowerVA] = useState<number>(2200);
-  const [capacityKWp, setCapacityKWp] = useState<number>(2.2);
-  const [selfConsumptionRatio, setSelfConsumptionRatio] = useState<number>(100);
-  const [plnTariff, setPlnTariff] = useState<number>(1444.70);
-  const [tariffInflation, setTariffInflation] = useState<number>(4);
-  const [capexPerKWp, setCapexPerKWp] = useState<number>(16000000);
+  const [dailyLoad, setDailyLoad] = useState<number>(40.3); // kWh/day
+  const [daysOfAutonomy, setDaysOfAutonomy] = useState<number>(3); // days
+  const [subsidy, setSubsidy] = useState<number>(80); // % (0 - 100)
+  const [bumdesTariff, setBumdesTariff] = useState<number>(2500); // IDR/kWh
+  const [systemCapacity, setSystemCapacity] = useState<number>(10.4); // kWp
+  const [capexPv, setCapexPv] = useState<number>(16000000); // IDR/kWp
 
-  // Constraints
-  const maxCapacity = useMemo<number>(() => plnPowerVA / 1000, [plnPowerVA]);
-  useEffect(() => {
-    if (capacityKWp > maxCapacity) {
-      setCapacityKWp(maxCapacity);
-    }
-  }, [maxCapacity, capacityKWp]);
+  // Technical Sizing & Initial Investment
+  const minPvRequired = dailyLoad / (PSH * PV_DERATING);
+  const isPvSufficient = systemCapacity >= minPvRequired;
+  const batteryCapacityKwh = (dailyLoad * daysOfAutonomy) / (DOD * BATTERY_EFFICIENCY);
+  const annualEnergyServed = dailyLoad * 365;
 
-  // Year 1 Baseline Calcs
-  const totalCapex = useMemo<number>(() => capacityKWp * capexPerKWp, [capacityKWp, capexPerKWp]);
-  const energyYear1 = useMemo<number>(() => capacityKWp * PSH_PER_DAY * 365 * PERFORMANCE_RATIO, [capacityKWp]);
-  const savingsYear1 = useMemo<number>(() => energyYear1 * (selfConsumptionRatio / 100) * plnTariff, [energyYear1, selfConsumptionRatio, plnTariff]);
+  const grossCapex = (systemCapacity * capexPv) + (batteryCapacityKwh * CAPEX_BATTERY_PER_KWH);
+  const netCapex = grossCapex * (1 - (subsidy / 100)); // BUMDes out-of-pocket
 
   // --- 2. The 20-Year Projection Loop ---
   const projectionData = useMemo<YearlyData[]>(() => {
-    const data: YearlyData[] = [];
-    let cumulative = -totalCapex;
-
-    // Year 0 Setup
-    data.push({
+    let cumulative = -netCapex;
+    const data: YearlyData[] = [{
       year: 0,
       energyProduced: 0,
-      tariff: plnTariff,
-      savings: 0,
+      revenue: 0,
       opex: 0,
-      replacementCost: 0,
-      totalCost: totalCapex,
-      netCashFlow: -totalCapex,
+      batteryReplacement: 0,
+      netCashFlow: -netCapex,
       cumulativeCashFlow: cumulative,
-    });
+    }];
 
-    let currentEnergy = capacityKWp * PSH_PER_DAY * 365 * PERFORMANCE_RATIO;
-    let currentTariff = plnTariff;
-    let currentOpex = totalCapex * OPEX_RATE;
+    let currentEnergy = systemCapacity * PSH * 365 * PV_DERATING;
+    let currentOpex = grossCapex * OPEX_RATE_YEAR_1;
+    const revenue = annualEnergyServed * bumdesTariff;
+    const batteryReplacementCost = batteryCapacityKwh * CAPEX_BATTERY_PER_KWH;
 
-    // Iterative Generation
     for (let year = 1; year <= PROJECT_LIFESPAN; year++) {
       if (year > 1) {
         currentEnergy = currentEnergy * (1 - DEGRADATION_RATE);
-        currentOpex = currentOpex * (1 + GENERAL_INFLATION_RATE);
-        currentTariff = currentTariff * (1 + TARIFF_INFLATION_RATE);
+        currentOpex = currentOpex * (1 + OPEX_INFLATION);
       }
-      
-      const replacementCost = (year === INVERTER_REPLACEMENT_YEAR) ? (totalCapex * INVERTER_REPLACEMENT_RATE) : 0;
-      const totalCost = currentOpex + replacementCost;
-      const savings = currentEnergy * (selfConsumptionRatio / 100) * currentTariff;
-      const netCashFlow = savings - totalCost;
-      
+
+      const batteryReplacement = (year === BATTERY_REPLACEMENT_YEAR) ? batteryReplacementCost : 0;
+      const netCashFlow = revenue - currentOpex - batteryReplacement;
       cumulative += netCashFlow;
 
       data.push({
         year,
         energyProduced: currentEnergy,
-        tariff: currentTariff,
-        savings,
+        revenue,
         opex: currentOpex,
-        replacementCost,
-        totalCost,
+        batteryReplacement,
         netCashFlow,
         cumulativeCashFlow: cumulative,
       });
     }
 
     return data;
-  }, [totalCapex, capacityKWp, plnTariff, selfConsumptionRatio]);
+  }, [netCapex, grossCapex, systemCapacity, annualEnergyServed, bumdesTariff, batteryCapacityKwh]);
 
   // --- 3. KPI Calculations ---
-  const { npv, lcoe, paybackPeriod } = useMemo(() => {
-    if (projectionData.length === 0) return { npv: 0, lcoe: 0, paybackPeriod: "> 20 Years" };
-
-    let npvCalc = -totalCapex;
+  const { npv, lcoe, paybackPeriod, dieselLcoeIdr, lcoeSavingsPercentage } = useMemo(() => {
+    let npvCalc = -netCapex;
     let discountedCosts = 0;
     let discountedEnergy = 0;
     let payback: string | number = "> 20 Years";
     let foundPayback = false;
 
-    // Iterate strictly from Year 1 to 20 for exact KPI tracking
     for (let T = 1; T <= PROJECT_LIFESPAN; T++) {
       const row = projectionData[T];
       const discountFactor = Math.pow(1 + DISCOUNT_RATE, T);
 
       // A. Net Present Value (NPV)
       npvCalc += (row.netCashFlow / discountFactor);
-      
-      // B. Levelized Cost of Energy (LCOE)
-      discountedCosts += (row.totalCost / discountFactor);
-      discountedEnergy += (row.energyProduced / discountFactor);
+
+      // B. Levelized Cost of Energy (LCOE), based on energy served
+      discountedCosts += ((row.opex + row.batteryReplacement) / discountFactor);
+      discountedEnergy += (annualEnergyServed / discountFactor);
 
       // C. Payback Period (Precision Linear Interpolation)
       if (!foundPayback && row.cumulativeCashFlow >= 0) {
@@ -135,14 +121,18 @@ export default function App() {
       }
     }
 
-    const lcoeCalc = discountedEnergy > 0 ? ((totalCapex + discountedCosts) / discountedEnergy) : 0;
+    const lcoeCalc = discountedEnergy > 0 ? ((grossCapex + discountedCosts) / discountedEnergy) : 0;
+    const dieselLcoeIdr = DIESEL_LCOE_BASELINE_USD * EXCHANGE_RATE;
+    const lcoeSavingsPercentage = ((dieselLcoeIdr - lcoeCalc) / dieselLcoeIdr) * 100;
 
     return {
       npv: npvCalc,
       lcoe: lcoeCalc,
       paybackPeriod: typeof payback === 'number' ? `${payback.toFixed(1)} Years` : payback,
+      dieselLcoeIdr,
+      lcoeSavingsPercentage
     };
-  }, [projectionData, totalCapex]);
+  }, [projectionData, netCapex, grossCapex, annualEnergyServed]);
 
   return (
     <div className="min-h-screen bg-white flex justify-center items-center font-sans text-slate-800">
@@ -156,6 +146,20 @@ export default function App() {
               {/* Top Header */}
               <div className="flex justify-between items-center mb-2">
                 <Header handlePrint={handlePrint} npv={npv} />
+              </div>
+
+              {/* Diesel vs Microgrid Banner */}
+              <div className="bg-[#eefcf2] border border-[#d1f4e0] rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-center text-[#1B4D3E] shadow-sm">
+                <div className="flex flex-col">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#357a5e] mb-1">Cost Comparison</span>
+                  <p className="text-sm">
+                    <span className="font-medium text-slate-500 line-through mr-2">Diesel: Rp {dieselLcoeIdr?.toLocaleString('id-ID', { maximumFractionDigits: 0 })}/kWh</span>
+                    <span className="font-bold">Microgrid: Rp {lcoe?.toLocaleString('id-ID', { maximumFractionDigits: 0 })}/kWh</span>
+                  </p>
+                </div>
+                <div className="mt-2 sm:mt-0 bg-[#d1f4e0] text-[#1B4D3E] px-3 py-1.5 rounded-lg text-sm font-bold text-center">
+                  {lcoeSavingsPercentage?.toFixed(1) || 0}% more cost-effective
+                </div>
               </div>
 
               {/* Main Chart Area */}
@@ -183,15 +187,17 @@ export default function App() {
               
               <div className="flex-1 flex flex-col gap-6">
                 <SystemSpecsForm 
-                  plnPowerVA={plnPowerVA} setPlnPowerVA={setPlnPowerVA}
-                  capacityKWp={capacityKWp} setCapacityKWp={setCapacityKWp}
-                  maxCapacity={maxCapacity}
-                  selfConsumptionRatio={selfConsumptionRatio} setSelfConsumptionRatio={setSelfConsumptionRatio}
+                  dailyLoad={dailyLoad} setDailyLoad={setDailyLoad}
+                  daysOfAutonomy={daysOfAutonomy} setDaysOfAutonomy={setDaysOfAutonomy}
+                  systemCapacity={systemCapacity} setSystemCapacity={setSystemCapacity}
+                  isPvSufficient={isPvSufficient}
+                  minPvRequired={minPvRequired}
+                  vSys={V_SYS}
                 />
                 <FinancialInputs 
-                  plnTariff={plnTariff} setPlnTariff={setPlnTariff}
-                  tariffInflation={tariffInflation} setTariffInflation={setTariffInflation}
-                  capexPerKWp={capexPerKWp} setCapexPerKWp={setCapexPerKWp}
+                  subsidy={subsidy} setSubsidy={setSubsidy}
+                  bumdesTariff={bumdesTariff} setBumdesTariff={setBumdesTariff}
+                  capexPv={capexPv} setCapexPv={setCapexPv}
                 />
               </div>
               
@@ -202,9 +208,9 @@ export default function App() {
           <div className="w-full p-6 lg:px-10 lg:pb-10 lg:pt-0 bg-white">
             <h3 className="font-bold text-lg text-slate-900 mb-4 hidden">Summary</h3>
             <KPISummary 
-              totalCapex={totalCapex}
-              energyYear1={energyYear1}
-              savingsYear1={savingsYear1}
+              grossCapex={grossCapex}
+              netCapex={netCapex}
+              batteryCapacityKwh={batteryCapacityKwh}
               npv={npv}
               lcoe={lcoe}
               paybackPeriod={paybackPeriod}

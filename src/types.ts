@@ -1,11 +1,9 @@
 export interface YearlyData {
   year: number;
   energyProduced: number;
-  tariff: number;
-  savings: number;
+  revenue: number;
   opex: number;
-  replacementCost: number;
-  totalCost: number;
+  batteryReplacement: number;
   netCashFlow: number;
   cumulativeCashFlow: number;
 }

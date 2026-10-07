@@ -1,5 +1,5 @@
 import React from 'react';
-import { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine, Cell } from 'recharts';
+import { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine } from 'recharts';
 import { YearlyData } from '../types';
 import { formatCompactIDR, formatIDR } from '../utils/formatters';
 
@@ -8,10 +8,17 @@ interface CashFlowChartProps {
 }
 
 export default function CashFlowChart({ projectionData }: CashFlowChartProps) {
+  const chartData = projectionData.map(row => ({
+    ...row,
+    opexOutflow: -row.opex,
+    batteryOutflow: -row.batteryReplacement,
+    initialCapexOutflow: row.year === 0 ? row.netCashFlow : 0,
+  }));
+
   return (
     <div className="w-full h-full min-h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={projectionData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          <ComposedChart data={chartData} stackOffset="sign" margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
             <XAxis 
               dataKey="year" 
@@ -34,14 +41,10 @@ export default function CashFlowChart({ projectionData }: CashFlowChartProps) {
             <Legend wrapperStyle={{ paddingTop: '20px' }} />
             <ReferenceLine y={0} stroke="#94a3b8" strokeWidth={1} />
             
-            <Bar dataKey="netCashFlow" name="Net Cash Flow" radius={[2, 2, 0, 0]} maxBarSize={40}>
-              {projectionData.map((entry, index) => (
-                <Cell 
-                  key={`cell-${index}`} 
-                  fill={entry.year === 0 || entry.netCashFlow < 0 ? '#cb5a5e' : '#659c7a'} 
-                />
-              ))}
-            </Bar>
+            <Bar dataKey="revenue" name="Revenue" stackId="cashFlow" fill="#659c7a" maxBarSize={40} />
+            <Bar dataKey="initialCapexOutflow" name="Net CAPEX" stackId="cashFlow" fill="#cb5a5e" maxBarSize={40} />
+            <Bar dataKey="opexOutflow" name="OPEX" stackId="cashFlow" fill="#cb5a5e" maxBarSize={40} />
+            <Bar dataKey="batteryOutflow" name="Battery Replacement" stackId="cashFlow" fill="#a04540" maxBarSize={40} />
             
             <Line 
               type="monotone" 

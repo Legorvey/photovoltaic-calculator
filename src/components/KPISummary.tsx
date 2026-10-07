@@ -3,16 +3,16 @@ import { formatNumber, formatIDR, formatCompactIDR } from '../utils/formatters';
 import { Card, CardContent } from './ui/card';
 
 interface KPISummaryProps {
-  totalCapex: number;
-  energyYear1: number;
-  savingsYear1: number;
+  grossCapex: number;
+  netCapex: number;
+  batteryCapacityKwh: number;
   npv: number;
   lcoe: number;
   paybackPeriod: string;
 }
 
 export default function KPISummary({
-  totalCapex, energyYear1, savingsYear1, npv, lcoe, paybackPeriod
+  grossCapex, netCapex, batteryCapacityKwh, npv, lcoe, paybackPeriod
 }: KPISummaryProps) {
   const isNpvPositive = npv >= 0;
 
@@ -23,14 +23,14 @@ export default function KPISummary({
         <CardContent className="p-4 flex flex-col justify-between h-full">
           <div>
             <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-wider">
-              Initial Investment
+              Gross CAPEX
             </p>
             <h3 className="text-xl font-bold text-slate-900 tracking-tight">
-              {formatCompactIDR(totalCapex)}
+              {formatCompactIDR(grossCapex)}
             </h3>
           </div>
           <div className="mt-2 pt-2 border-t border-slate-100">
-            <p className="text-slate-500 text-[10px]">Total Capital Expenditure</p>
+            <p className="text-slate-500 text-[10px]">PV and battery investment</p>
           </div>
         </CardContent>
       </Card>
@@ -39,14 +39,14 @@ export default function KPISummary({
         <CardContent className="p-4 flex flex-col justify-between h-full">
           <div>
             <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-wider">
-              Year 1 Energy Yield
+              Net CAPEX
             </p>
             <h3 className="text-xl font-bold text-slate-900 tracking-tight">
-              {formatNumber(energyYear1, 0)} <span className="text-sm font-medium text-slate-500">kWh</span>
+              {formatCompactIDR(netCapex)}
             </h3>
           </div>
           <div className="mt-2 pt-2 border-t border-slate-100">
-            <p className="text-slate-500 text-[10px]">Estimated annual production</p>
+            <p className="text-slate-500 text-[10px]">BUMDes Cost</p>
           </div>
         </CardContent>
       </Card>
@@ -55,14 +55,14 @@ export default function KPISummary({
         <CardContent className="p-4 flex flex-col justify-between h-full">
           <div>
             <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-wider">
-              Year 1 Savings
+              Battery Capacity
             </p>
             <h3 className="text-xl font-bold text-slate-900 tracking-tight">
-              {formatCompactIDR(savingsYear1)} <span className="text-sm font-medium text-slate-500">/yr</span>
+              {formatNumber(batteryCapacityKwh, 1)} <span className="text-sm font-medium text-slate-500">kWh</span>
             </h3>
           </div>
           <div className="mt-2 pt-2 border-t border-slate-100">
-            <p className="text-slate-500 text-[10px]">Based on self-consumption</p>
+            <p className="text-slate-500 text-[10px]">Sodium-ion storage</p>
           </div>
         </CardContent>
       </Card>
